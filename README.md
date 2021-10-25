@@ -1,2 +1,2 @@
-# nlw_heat_node
+# NLW Heat - Node
 DoWhile - NodeJS API
