@@ -1,4 +1,5 @@
 import axios from "axios";
+import prismaClient from "../prisma";
 
 interface IAccessTokenReponse {
   access_token: string;
@@ -6,9 +7,9 @@ interface IAccessTokenReponse {
 
 interface IUserReponse {
   id: number;
-  avatar_url: string;
   login: string;
   name: string;
+  avatar_url: string;
 }
 
 class AuthenticateUserService {
@@ -38,6 +39,25 @@ class AuthenticateUserService {
         },
       }
     );
+
+    const { id, login, name, avatar_url } = response.data;
+
+    let user = await prismaClient.user.findFirst({
+      where: {
+        github_id: id,
+      },
+    });
+
+    if (!user) {
+      user = await prismaClient.user.create({
+        data: {
+          github_id: id,
+          login,
+          name,
+          avatar_url,
+        },
+      });
+    }
 
     return response.data;
   }
