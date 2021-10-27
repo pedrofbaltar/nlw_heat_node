@@ -4,6 +4,13 @@ interface IAccessTokenReponse {
   access_token: string;
 }
 
+interface IUserReponse {
+  id: number;
+  avatar_url: string;
+  login: string;
+  name: string;
+}
+
 class AuthenticateUserService {
   async execute(code: string) {
     const url = "https://github.com/login/oauth/access_token";
@@ -23,7 +30,16 @@ class AuthenticateUserService {
       }
     );
 
-    return AccessTokenReponse.access_token;
+    const response = await axios.get<IUserReponse>(
+      "https://api.github.com/user",
+      {
+        headers: {
+          authorization: `Bearer ${AccessTokenReponse.access_token}`,
+        },
+      }
+    );
+
+    return response.data;
   }
 }
 
