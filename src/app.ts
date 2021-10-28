@@ -7,7 +7,6 @@ import { Server } from "socket.io";
 import { router } from "./routes";
 
 const app = express();
-app.use(cors());
 
 const serverHttp = http.createServer(app);
 
@@ -21,20 +20,19 @@ io.on("connection", (socket) => {
   console.log(`User conected on socket ${socket.id}`);
 });
 
-app.use(express.json());
+app
+  .use(cors())
+  .use(express.json())
+  .use(router)
+  .get("/github", (req, res) => {
+    res.redirect(
+      `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}`
+    );
+  })
+  .get("/singin/callback", (req, res) => {
+    const { code } = req.query;
 
-app.use(router);
-
-app.get("/github", (req, res) => {
-  res.redirect(
-    `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}`
-  );
-});
-
-app.get("/singin/callback", (req, res) => {
-  const { code } = req.query;
-
-  return res.json(code);
-});
+    return res.json(code);
+  });
 
 export { serverHttp, io };
