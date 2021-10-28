@@ -1,5 +1,6 @@
 import axios from "axios";
 import prismaClient from "../prisma";
+import { sign } from "jsonwebtoken";
 
 interface IAccessTokenReponse {
   access_token: string;
@@ -15,6 +16,7 @@ interface IUserReponse {
 class AuthenticateUserService {
   async execute(code: string) {
     const url = "https://github.com/login/oauth/access_token";
+    const jwtSecret = String(process.env.JWT_SECRET);
 
     const { data: AccessTokenReponse } = await axios.post<IAccessTokenReponse>(
       url,
@@ -59,7 +61,22 @@ class AuthenticateUserService {
       });
     }
 
-    return response.data;
+    const token = sign(
+      {
+        user: {
+          id: user.id,
+          name: user.name,
+          avatar_url: user.avatar_url,
+        },
+      },
+      jwtSecret,
+      {
+        subject: user.id,
+        expiresIn: "1d",
+      }
+    );
+
+    return { token, user };
   }
 }
 
